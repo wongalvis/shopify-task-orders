@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
+<body>
+
+<script>
+var app = angular.module("ordersapp", []); 
+app.controller("indexCtrl", function($scope, $http) {
+    $scope.products = ["Milk", "Bread", "Cheese"];
+    $scope.orderslist = [];
+
+    var sumorders = function(orders){
+        var total = orders.reduce(function (sum, element) {
+            //console.log (element.total_price);
+            return sum + Number(element.total_price);
+        }, 0);
+        return total;
+    }
+
+    var getorders = function (page){
+        $http.get("https://shopicruit.myshopify.com/admin/orders.json?page="+page+"&access_token=c32313df0d0ef512ca64d5b336a0d7c6")
+        .then(function(response) {
+            //$scope.myWelcome = response.data;
+            //$scope.hi = response.data.orders[0].id;
+            var orders = response.data.orders;
+            console.log (page);
+            $scope.orderslist = $scope.orderslist.concat(orders);
+            console.log ($scope.orderslist);
+            if (orders.length != 0) getorders(page+1);
+            else $scope.totalprice = sumorders($scope.orderslist).toFixed(5);
+        });
+    }
+	/*$http({method: 'jsonp', url: 'https://shopicruit.myshopify.com/admin/orders.json?page=1&access_token=c32313df0d0ef512ca64d5b336a0d7c6'}).
+	  success(function(data) {
+	    $scope.countries = data;
+	    console.log('success');
+	  }).
+	  error(function(data) {
+	    console.log('error');
+	  });    */
+
+    getorders(1);
+
+});
+</script>
+
+<div ng-app="ordersapp" ng-controller="indexCtrl">
+  
+    {{totalprice}}
+
+</div>
+
+
+</body>
+</html>
