@@ -10,6 +10,7 @@
     <script type="text/javascript"
         src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBho2Qw1DqXG9lOprH2z7PNE3FymIp7U4U&libraries=visualization&sensor=true_or_false">
     </script>
+    <script src="https://cdn.jsdelivr.net/lodash/4.17.3/lodash.min.js"></script>
 
 <body>
 
@@ -163,6 +164,18 @@ app.controller("indexCtrl", function($scope, $http) {
                 $scope.orderslatlng = latlngs ($scope.orderslist);
                 console.log ($scope.orderslatlng);
                 makeheatmap ($scope.orderslatlng);
+                
+                $scope.sortedorders = $scope.orderslist.sort(function (a, b) {
+                  if (parseFloat(a.total_price) > parseFloat(b.total_price)) {
+                    return -1;
+                  }
+                  if (parseFloat(a.total_price) < parseFloat(b.total_price)) {
+                    return 1;
+                  }
+                  // a must be equal to b
+                  return 0;
+                });
+                console.log ($scope.sortedorders);
             }
         });
     }
@@ -173,13 +186,16 @@ app.controller("indexCtrl", function($scope, $http) {
     /*var data=    [
         ['US.CA', 728]
     ];*/
-
+    console.log (_.defaults({ 'a': 1 }, { 'a': 3, 'b': 2 }));
 });
 </script>
 
 <div ng-app="ordersapp" ng-controller="indexCtrl">
   
-    <div>{{totalprice}}</div>
+    <div>Total Price: {{totalprice}}</div>
+    <div>Top 10 Orders</div>
+    <div ng-repeat="order in sortedorders|limitTo:10">{{order.billing_address.first_name}} {{order.billing_address.last_name}} from {{order.billing_address.city}}, {{order.billing_address.province}} (#{{order.order_number}}): {{order.total_price}}</div>
+
     
     <div id="nummap" style="width:48%; height:600px; display:inline-block; margin-right:2%;"></div>
     <div id="map" style="width:48%; height:600px; display:inline-block;"></div>
