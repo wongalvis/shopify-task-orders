@@ -7,13 +7,15 @@
       crossorigin="anonymous"></script>
     <script src="https://code.highcharts.com/highcharts.js"></script>
     <script src="https://code.highcharts.com/maps/modules/map.js"></script>
+    <script type="text/javascript"
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBho2Qw1DqXG9lOprH2z7PNE3FymIp7U4U&libraries=visualization&sensor=true_or_false">
+    </script>
 
 <body>
 
 <script>
 var app = angular.module("ordersapp", []); 
 app.controller("indexCtrl", function($scope, $http) {
-    $scope.products = ["Milk", "Bread", "Cheese"];
     $scope.orderslist = [];
 
     var sumorders = function(orders){
@@ -33,6 +35,15 @@ app.controller("indexCtrl", function($scope, $http) {
             return result;
         }, {});
         return total;
+    }
+    
+    var latlngs = function(orders) {
+        var arr = orders.reduce(function (result, element) {
+            var mapelement = new google.maps.LatLng(element.billing_address.latitude, element.billing_address.longitude)
+            result.push(mapelement);
+            return result;
+        }, []);
+        return arr;
     }
     
     var locationmap = function(mapdata) {
@@ -79,6 +90,30 @@ app.controller("indexCtrl", function($scope, $http) {
             });
         });
     }
+    
+    
+    var makeheatmap = function(data){
+        /* Data points defined as an array of LatLng objects */
+        var heatmapData = [
+          new google.maps.LatLng(37.785, -122.435)
+        ];
+        
+        heatmapData = data;
+
+        var origin = new google.maps.LatLng(33, -67);
+
+        map = new google.maps.Map(document.getElementById('map'), {
+          center: origin,
+          zoom: 2,
+          mapTypeId: google.maps.MapTypeId.ROADMAP
+        });
+
+        var heatmap = new google.maps.visualization.HeatmapLayer({
+          data: heatmapData
+        });
+        heatmap.setMap(map);
+    }
+
 
     var getorders = function (page){
         $http.get("https://shopicruit.myshopify.com/admin/orders.json?page="+page+"&access_token=c32313df0d0ef512ca64d5b336a0d7c6")
@@ -94,14 +129,6 @@ app.controller("indexCtrl", function($scope, $http) {
                 $scope.totalprice = sumorders($scope.orderslist).toFixed(5);
                 $scope.ordersbylocation = groupordersbylocation($scope.orderslist);
                 console.log ($scope.ordersbylocation);
-                /*var data = $scope.ordersbylocation.reduce(function (sum, element) {
-                    console.log (element.length);
-                    return sum + Number(element.length);
-                }, 0);
-                console.log (data);
-                $scope.ordersbylocation.forEach(function(element, index) {
-                    console.log (index);
-                });*/
                 $scope.locationorders = [];
                 angular.forEach($scope.ordersbylocation, function(value, key) {
                     var entry = [];
@@ -112,17 +139,12 @@ app.controller("indexCtrl", function($scope, $http) {
                 }, $scope.locationorders);
                 console.log ($scope.locationorders);
                 locationmap ($scope.locationorders);
+                $scope.orderslatlng = latlngs ($scope.orderslist);
+                console.log ($scope.orderslatlng);
+                makeheatmap ($scope.orderslatlng);
             }
         });
     }
-	/*$http({method: 'jsonp', url: 'https://shopicruit.myshopify.com/admin/orders.json?page=1&access_token=c32313df0d0ef512ca64d5b336a0d7c6'}).
-	  success(function(data) {
-	    $scope.countries = data;
-	    console.log('success');
-	  }).
-	  error(function(data) {
-	    console.log('error');
-	  });    */
 
     getorders(1);
     //console.log ($scope.orderslocations);
@@ -131,15 +153,15 @@ app.controller("indexCtrl", function($scope, $http) {
         ['US.CA', 728]
     ];*/
 
-
 });
 </script>
 
 <div ng-app="ordersapp" ng-controller="indexCtrl">
   
-    {{totalprice}}
+    <div>{{totalprice}}</div>
     
-    <div id="container" style="width:100%; height:600px;"></div>
+    <div id="container" style="width:48%; height:600px; display:inline-block; margin-right:2%;"></div>
+    <div id="map" style="width:48%; height:600px; display:inline-block;"></div>
 
 
 </div>
