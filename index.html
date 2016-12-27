@@ -46,7 +46,7 @@ app.controller("indexCtrl", function($scope, $http) {
         return arr;
     }
     
-    var locationmap = function(mapdata) {
+    var locationmap = function(mapdata, title, seriesname, targetid) {
         // format: '{point.properties.postal-code}' does not work :( while hardcoding 
         // var data as in the demo works
         var data = mapdata;
@@ -55,10 +55,10 @@ app.controller("indexCtrl", function($scope, $http) {
         $.getJSON('http://code.highcharts.com/mapdata/custom/usa-and-canada.geo.json', function (geojson) {
     
             // Initiate the chart
-            Highcharts.mapChart('container', {
+            Highcharts.mapChart(targetid, {
 
                 title: {
-                    text: 'Number of Orders by Location'
+                    text: title
                 },
 
                 mapNavigation: {
@@ -76,7 +76,7 @@ app.controller("indexCtrl", function($scope, $http) {
                     mapData: geojson,
                     joinBy: ['hasc', 0],
                     keys: ['hasc', 'value'],
-                    name: 'Orders count',
+                    name: seriesname,
                     states: {
                         hover: {
                             color: '#a4edba'
@@ -138,7 +138,28 @@ app.controller("indexCtrl", function($scope, $http) {
                     //console.log (key);
                 }, $scope.locationorders);
                 console.log ($scope.locationorders);
-                locationmap ($scope.locationorders);
+                locationmap ($scope.locationorders, 'Number of Orders by Location', 'Orders count', 'nummap');
+                
+                $scope.locationsums = [];
+                angular.forEach($scope.ordersbylocation, function(value, key) {
+                    var entry = [];
+                    entry.push(key);
+                    entry.push(sumorders(value));
+                    this.push (entry);
+                }, $scope.locationsums);
+                console.log ($scope.locationsums);
+                locationmap ($scope.locationsums, 'Orders Price Sum by Location', 'Orders Price Sum', 'summap');
+                
+                $scope.locationavgs = [];
+                angular.forEach($scope.ordersbylocation, function(value, key) {
+                    var entry = [];
+                    entry.push(key);
+                    entry.push(sumorders(value)/value.length);
+                    this.push (entry);
+                }, $scope.locationavgs);
+                console.log ($scope.locationavgs);
+                locationmap ($scope.locationavgs, 'Orders Price Average by Location', 'Orders Price Average', 'avgmap');
+                
                 $scope.orderslatlng = latlngs ($scope.orderslist);
                 console.log ($scope.orderslatlng);
                 makeheatmap ($scope.orderslatlng);
@@ -160,8 +181,11 @@ app.controller("indexCtrl", function($scope, $http) {
   
     <div>{{totalprice}}</div>
     
-    <div id="container" style="width:48%; height:600px; display:inline-block; margin-right:2%;"></div>
+    <div id="nummap" style="width:48%; height:600px; display:inline-block; margin-right:2%;"></div>
     <div id="map" style="width:48%; height:600px; display:inline-block;"></div>
+    
+    <div id="summap" style="width:48%; height:600px; display:inline-block; margin-right:2%;"></div>
+    <div id="avgmap" style="width:48%; height:600px; display:inline-block;"></div>
 
 
 </div>
