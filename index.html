@@ -18,6 +18,8 @@
 var app = angular.module("ordersapp", []); 
 app.controller("indexCtrl", function($scope, $http) {
     $scope.orderslist = [];
+    var avgincome = {ON: 42643, AK: 33062, AL: 23606, AR: 22883, AZ: 25715, CA: 30441, CO: 32357, CT: 39373, FL: 26582, GA: 25615, HI: 29736, IA: 28361};
+    console.log (avgincome);
 
     var sumorders = function(orders){
         var total = orders.reduce(function (sum, element) {
@@ -128,6 +130,8 @@ app.controller("indexCtrl", function($scope, $http) {
             if (orders.length != 0) getorders(page+1);
             else {
                 $scope.totalprice = sumorders($scope.orderslist).toFixed(5);
+                $scope.avgprice = ($scope.totalprice/$scope.orderslist.length).toFixed(5);
+                
                 $scope.ordersbylocation = groupordersbylocation($scope.orderslist);
                 console.log ($scope.ordersbylocation);
                 $scope.locationorders = [];
@@ -192,9 +196,12 @@ app.controller("indexCtrl", function($scope, $http) {
 
 <div ng-app="ordersapp" ng-controller="indexCtrl">
   
-    <div>Total Price: {{totalprice}}</div>
-    <div>Top 10 Orders</div>
-    <div ng-repeat="order in sortedorders|limitTo:10">{{order.billing_address.first_name}} {{order.billing_address.last_name}} from {{order.billing_address.city}}, {{order.billing_address.province}} (#{{order.order_number}}): {{order.total_price}}</div>
+    <div style="width:100%; margin-bottom:1em;">
+        <div style="width:48%; display:inline-block; margin-right:2%; height:100%; vertical-align:top;">Total Price: {{totalprice}}<br>Average Price: {{avgprice}}</div>
+        <div style="width:48%; display:inline-block; height:100%; vertical-align:top;">Top 10 Orders:<br>
+            <div ng-repeat="order in sortedorders|limitTo:10">{{order.billing_address.first_name}} {{order.billing_address.last_name}} from {{order.billing_address.city}}, {{order.billing_address.province}} (#{{order.order_number}}): {{order.total_price}}</div>
+        </div>
+    </div>
 
     
     <div id="nummap" style="width:48%; height:600px; display:inline-block; margin-right:2%;"></div>
